@@ -1,0 +1,324 @@
+###############################
+#Living room lamp control
+  - alias: 'Weekday Living Room Lamp 0500'
+    trigger:      
+      - platform: time
+        at: '05:00:00'
+    action:
+      service: switch.turn_on
+      entity_id: switch.livingroom_lamp
+
+  - alias: 'Living Room Lamp Off'
+    trigger:
+      - platform: sun
+        event: sunrise
+        #offset: '00:30:00'
+    action:
+      service: switch.turn_off
+      entity_id: switch.livingroom_lamp
+###############################
+###############################
+
+###############################
+#Christmas Lights Control
+  - alias: 'Christmas Lights Morning'
+    trigger:      
+      - platform: time
+        at: '05:00:00'
+    action:
+      service: switch.turn_on
+      entity_id: switch.livingroom_lamp
+
+  - alias: 'Christmas Lights Morning Off'
+    trigger:
+      - platform: sun
+        event: sunrise
+        #offset: '00:30:00'
+    action:
+      service: switch.turn_off
+      entity_id: switch.livingroom_lamp
+
+  - alias: 'Christmas Lights Afternoon'
+    trigger:      
+      - platform: sun
+        event: sunset
+    action:
+      service: switch.turn_on
+      entity_id: switch.livingroom_lamp
+
+  - alias: 'Christmas Lights Afternoon Off'
+    trigger:
+      - platform: time
+        at: '22:00:00'
+        #offset: '00:30:00'
+    action:
+      service: switch.turn_off
+      entity_id: switch.livingroom_lamp
+
+  - alias: 'Exterior Christmas Lights On'
+    trigger:
+      - platform: sun
+        event: sunset
+    action:
+      service: switch.turn_on
+      entity_id: switch.outsideplug
+      
+  - alias: 'Exterior Christmas Lights Off'
+    trigger:
+      - platform: time
+        at: '22:00:00'
+    action:
+      service: switch.turn_off
+      entity_id: switch.outsideplug
+###############################
+###############################
+
+###############################
+#Garden Watering Control
+
+  - alias: 'Garden Water On'
+    trigger:
+      - platform: time
+        at: '06:49:00'
+    action:
+      service: switch.turn_on
+      entity_id: switch.sprinklers
+
+  - alias: 'Garden Water Off'
+    trigger:
+      - platform: time
+        at: '06:59:00'
+    action:
+      service: switch.turn_off
+      entity_id: switch.sprinklers
+
+
+##############################
+############################## 
+
+##############################
+#Garage Accent Lights 
+
+  - alias: 'Garage Accent Lights On'
+    trigger:
+      - platform: sun
+        event: sunset
+        offset: '-00:30:00'
+    action:
+      service: scene.turn_on
+      entity_id: scene.garage_accents
+  - alias: 'Garage Accent Lights Off'
+    trigger:
+      - platform: sun
+        event: sunrise
+        #offset: '00:30:00'
+    action:
+      service: light.turn_off
+      entity_id: light.garage_accent_lights
+##############################
+##############################
+
+##############################
+#Front Exterior Lights Turn On
+
+  - alias: 'Front Exterior Lights On'
+    trigger:
+      - platform: sun
+        event: sunset
+        offset: '-00:30:00'
+    action:
+      service: scene.turn_on
+      entity_id: scene.Front_Door_Lights
+      
+  - alias: 'Front Exterior Lights Off'
+    trigger:
+      - platform: sun
+        event: sunrise
+        #offset: '00:30:00'
+    action:
+      service: light.turn_off
+      entity_id: light.front_exterior_lights
+
+##############################
+##############################
+
+##############################
+#Front Exterior Lights Motion Detected
+  - alias: Motion Detected Outdoors
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.front_door_motion
+        to: 'on' 
+    condition:
+        condition: or
+        conditions:
+          - condition: sun
+            after: sunset
+            after_offset: "-00:30:00"
+          - condition: sun
+            before: sunrise
+            #before_offset: "-00:30:00"
+    action:
+      - service: scene.turn_on
+        entity_id: scene.Front_Door_Lights_Max_Brightness
+      - service: timer.cancel
+        entity_id: timer.reset_outdoor_lights
+        
+##############################
+##############################
+
+##############################
+#Front Exterior Lights Reset to Low Brightness
+
+  - alias: Reset Outdoor Lights Night
+    trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.reset_outdoor_lights
+    condition:
+        condition: or
+        conditions:
+          - condition: sun
+            after: sunset
+            after_offset: "-00:30:00"
+          - condition: sun
+            before: sunrise
+            #before_offset: "00:30:00"
+    action:
+      - service: scene.turn_on
+        entity_id: scene.Front_Door_Lights
+##############################
+##############################
+
+##############################
+#Front Exterior Motion Stopped       
+  - alias: Motion Stopped Outdoors
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.front_door_motion
+        to: 'off'
+    condition:
+        condition: or
+        conditions:
+          - condition: sun
+            after: sunset
+            after_offset: "-00:30:00"
+          - condition: sun
+            before: sunrise
+            #before_offset: "00:30:00"
+    action:
+      - service: timer.start
+        entity_id: timer.reset_outdoor_lights
+
+        
+##############################
+##############################
+
+###############################
+#Lawn Watering
+
+  - alias: 'Lawn Irrigation On'
+    trigger:
+      - platform: time
+        at: '05:00:00'
+    action:
+      - service: switch.turn_on
+        entity_id: switch.garage_relay_1
+      - service: timer.start
+        entity_id: timer.irrigation_10m
+
+  - alias: 'Lawn Irrigation Off'
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.irrigation_10m
+    action:
+      - service: switch.turn_off
+        entity_id: switch.garage_relay_1
+      - service: timer.cancel
+        entity_id: timer.irrigation_10m
+
+##############################
+############################## 
+
+###############################
+#Flower Bed Watering
+
+  - alias: 'Flower Bed Water On'
+    trigger:
+      - platform: time
+        at: '05:10:05'
+    action:
+      - service: switch.turn_on
+        entity_id: switch.garage_relay_2
+      - service: timer.start
+        entity_id: timer.irrigation_5m
+  - alias: 'Flower Bed Water Off'
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.irrigation_5m
+    action:
+      - service: switch.turn_off
+        entity_id: switch.garage_relay_2
+      - service: timer.cancel
+        entity_id: timer.irrigation_5m
+
+
+##############################
+############################## 
+
+##############################
+#Front Exterior Lights Turn On
+
+  - alias: 'Backdoor Lights On'
+    trigger:
+      - platform: sun
+        event: sunset
+        offset: '-00:30:00'
+    action:
+      service: scene.turn_on
+      entity_id: scene.BackDoorLights
+      
+  - alias: 'Backdoor Lights Off'
+    trigger:
+      - platform: sun
+        event: sunrise
+        #offset: '00:30:00'
+    action:
+      service: light.turn_off
+      entity_id: light.backdoorlight
+
+##############################
+##############################
+
+##############################
+#Gate Open/Close Alert
+
+  - alias: 'Gate Opened'
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.pin_gpio2
+        from: 'on'
+        to: 'off'
+    action:
+      service: notify.hangoutsnotifier
+      data_template:
+        message: "Good Day, the Gate IS OPEN!!!!"
+        
+  - alias: 'Gate Closed'
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.pin_gpio2
+        from: 'off'
+        to: 'on'
+    action:
+      service: notify.hangoutsnotifier
+      data_template:
+        message: "Ola! The gate IS CLOSED!!!!"
+        
+##############################
+##############################
